@@ -82,7 +82,7 @@
     <a href="#" onclick="redirigir('ver_pase_general.html')">✅ Ver Pase de Lista General</a>
     <a href ="#" onclick="redirigir('asistenciaProfesor.html')">📋 Ver asistencia Profesores</a>
     <button class="btn-excel" onclick="generarExcel()">🧾 Generar Excel General</button>
-    <a href="login.html">🚪 Cerrar Sesión</a>
+    <a href="index.html">🚪 Cerrar Sesión</a>
   </div>
 
   <div class="main-content">
@@ -96,43 +96,32 @@
   </div>
 
 <script>
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario || usuario.rol !== 3) {
-      location.href = "index.html";
-    } else {
-      document.getElementById("nombreAdmin").textContent = usuario.nombre;
-    }
+  let usuario = null;
+  try {
+    usuario = JSON.parse(localStorage.getItem("usuario"));
+  } catch (e) {
+    console.warn("Usuario inválido en localStorage");
+  }
 
-    function redirigir(pagina) {
-      const grupo = document.getElementById("grupoSelect").value;
-      localStorage.setItem("grupoSeleccionado", grupo);
-      location.href = pagina;
-    }
+  if (!usuario || usuario.rol !== 3) {
+    location.href = "index.html";
+  } else {
+    document.getElementById("nombreAdmin").textContent = usuario.nombre;
+  }
 
-    function generarExcel() {
-      const claveM = "ACF-0905";  // Ajusta esto si quieres que venga de otro lado
-      const numGrup = document.getElementById("grupoSelect").value;
+  function redirigir(pagina) {
+    const grupo = document.getElementById("grupoSelect").value;
+    localStorage.setItem("grupoSeleccionado", grupo);
+    location.href = pagina;
+  }
 
-      const url = `https://asistenback.onrender.com/reportes/excel_asistencias?claveM=${claveM}&numGrup=${numGrup}`;
-
-      fetch(url)
-        .then(response => {
-          if (!response.ok) throw new Error("No se pudo generar el archivo Excel.");
-          return response.blob();
-        })
-        .then(blob => {
-          const a = document.createElement("a");
-          const urlBlob = window.URL.createObjectURL(blob);
-          a.href = urlBlob;
-          a.download = `asistencia_${claveM}_grupo${numGrup}.xlsx`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        })
-        .catch(error => {
-          alert("Error al generar el Excel: " + error.message);
-        });
-    }
+  function generarExcel() {
+    const claveM = "ACF-0905";
+    const numGrup = document.getElementById("grupoSelect").value;
+    const url = `https://asistenback.onrender.com/reportes/excel_asistencias?claveM=${claveM}&numGrup=${numGrup}`;
+    window.open(url, "_blank"); // ✅ Abrir Excel en nueva pestaña
+  }
 </script>
+
 </body>
 </html>

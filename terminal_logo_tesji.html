@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function registrarAsistencia(data, esProfesor) {
-        const baseUrl = "http://192.168.1.10:8000/terminal";
+        const baseUrl = "https://asistenback.onrender.com/terminal";
         const endpoint = esProfesor 
             ? `${baseUrl}/registrar-asistencia-profesor`
             : `${baseUrl}/registrar-asistencia`;
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // 1. Primero buscar como alumno
         const resAlumno = await fetchWithTimeout(
-            `http://192.168.1.10:8000/terminal/buscar-alumno?claveT=${encodeURIComponent(entradaLimpia)}`,
+            `https://asistenback.onrender.com/terminal/buscar-alumno?claveT=${encodeURIComponent(entradaLimpia)}`,
             {},
             5000 // Timeout de 5 segundos
         );
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // 2. Si no es alumno, buscar como profesor
         const resProfesor = await fetchWithTimeout(
-            `http://192.168.1.10:8000/terminal/buscar-profesor?claveT=${encodeURIComponent(entradaLimpia)}`,
+            `https://asistenback.onrender.com/terminal/buscar-profesor?claveT=${encodeURIComponent(entradaLimpia)}`,
             {},
             5000 // Timeout de 5 segundos
         );
