@@ -80,13 +80,13 @@
 
       if (!usuario) {
         errorContainer.textContent = "Sesión no encontrada. Redirigiendo al login...";
-        setTimeout(() => window.location.href = "login.html", 2000);
+        setTimeout(() => window.location.href = "index.html", 2000);
         return;
       }
 
       if (parseInt(usuario.rol) !== 2) {
         errorContainer.textContent = "Acceso restringido a profesores. Redirigiendo...";
-        setTimeout(() => window.location.href = "login.html", 2000);
+        setTimeout(() => window.location.href = "index.html", 2000);
         return;
       }
 
