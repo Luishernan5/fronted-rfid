@@ -48,8 +48,8 @@
                 if (errorDiv) errorDiv.style.display = 'none';
 
                 // URL del backend - ajusta según tu configuración
-                const backendUrl = 'https://asistenback.onrender.com/';
-                const response = await fetch(`${backendUrl}/api/asistencias/pase-lista-grupo/${grupo}`);
+                //const backendUrl = 'https://asistenback.onrender.com/';
+                const response = await fetch(`https://asistenback.onrender.com/api/asistencias/pase-lista-grupo/${grupo}`);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
