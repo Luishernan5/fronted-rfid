@@ -45,7 +45,7 @@
             tabla.innerHTML = '<tr><td colspan="7" class="loading">Cargando datos...</td></tr>';
             errorDiv.style.display = 'none';
 
-            axios.get('http://localhost:8000/asistencia-profesores/')
+            axios.get('https://asistenback.onrender.com/asistencia-profesores/')
                 .then(response => {
                     if (response.data.length === 0) {
                         tabla.innerHTML = '<tr><td colspan="7">No hay datos de asistencia disponibles</td></tr>';

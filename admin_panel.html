@@ -113,7 +113,7 @@
       const claveM = "ACF-0905";  // Ajusta esto si quieres que venga de otro lado
       const numGrup = document.getElementById("grupoSelect").value;
 
-      const url = `http://127.0.0.1:8000/reportes/excel_asistencias?claveM=${claveM}&numGrup=${numGrup}`;
+      const url = `https://asistenback.onrender.com/reportes/excel_asistencias?claveM=${claveM}&numGrup=${numGrup}`;
 
       fetch(url)
         .then(response => {

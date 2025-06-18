@@ -36,7 +36,7 @@
   // Función para cargar horario desde la API (solo para rol 2 - Profesor)
   async function cargarHorarioDesdeAPI(claveP) {
     try {
-      const response = await fetch(`http://localhost:8000/profesores/${claveP}/horario`);
+      const response = await fetch(`https://asistenback.onrender.com/profesores/${claveP}/horario`);
       
       // Verificar si la respuesta es exitosa
       if (!response.ok) {

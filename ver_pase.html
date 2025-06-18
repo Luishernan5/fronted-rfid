@@ -122,7 +122,7 @@
         document.getElementById("nombreMateria").textContent = appState.materia;
         
         const response = await fetch(
-          `http://localhost:8000/api/asistencias/?claveM=${appState.materia}&numGrup=${appState.grupo}&unique=true`
+          `https://asistenback.onrender.com/api/asistencias/?claveM=${appState.materia}&numGrup=${appState.grupo}&unique=true`
         );
         
         if (!response.ok) {

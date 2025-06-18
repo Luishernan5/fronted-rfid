@@ -76,7 +76,7 @@ async function cargarHorario() {
       throw new Error("No se encontró la matrícula del alumno");
     }
     
-    const response = await fetch(`http://localhost:8000/api/asistencias/horario-alumno/${estado.usuario.matricula}`);
+    const response = await fetch(`https://asistenback.onrender.com/api/asistencias/horario-alumno/${estado.usuario.matricula}`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

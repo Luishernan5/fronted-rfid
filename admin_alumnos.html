@@ -40,7 +40,7 @@
     // Función para cargar alumnos desde la API
     async function cargarAlumnos() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/alumnos');
+        const response = await fetch('https://asistenback.onrender.com/api/alumnos');
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Error ${response.status}: ${errorText}`);
@@ -67,7 +67,7 @@
     // Función para agregar alumno via API
     async function crear_alumno(alumnoData) {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/alumnos', {
+        const response = await fetch('https://asistenback.onrender.com/api/alumnos', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -97,7 +97,7 @@
     // Función para eliminar alumno via API
     async function eliminarAlumnoAPI(matricula) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/alumnos/${matricula}`, {
+        const response = await fetch(`https://asistenback.onrender.com/api/alumnos/${matricula}`, {
           method: 'DELETE'
         });
         
