@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pase de Lista General por Grupo</title>
+    <link rel="stylesheet" href="css/verpase.css">
+</head>
+<body>
+    <div class="container">
+        <h2 id="tituloPase">Pase de Lista General - Grupo </h2>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Materia</th>
+                    <th>Profesor</th>
+                    <th>Asistencias</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody id="tablaPaseGeneral">
+                <tr>
+                    <td colspan="7" class="loading">Cargando datos...</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <button onclick="window.location.href='admin_panel.html'">Volver</button>
+    </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarPaseGeneral();
+        });
+
+        async function cargarPaseGeneral() {
+            const grupo = 3401;
+            const tbody = document.getElementById("tablaPaseGeneral");
+            const tituloPase = document.getElementById("tituloPase");
+            const errorDiv = document.getElementById("error-message");
+
+            try {
+                // Mostrar estado de carga
+                tbody.innerHTML = "<tr><td colspan='7' class='loading'>Cargando datos...</td></tr>";
+                if (errorDiv) errorDiv.style.display = 'none';
+
+                // URL del backend - ajusta según tu configuración
+                const backendUrl = 'http://localhost:8000';
+                const response = await fetch(`${backendUrl}/api/asistencias/pase-lista-grupo/${grupo}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || "Error al obtener datos");
+                }
+
+                const data = await response.json();
+                console.log("Datos recibidos:", data);
+
+                // Actualizar título
+                tituloPase.textContent = `Pase de Lista General - Grupo ${data.grupo || grupo}`;
+
+                // Limpiar tabla
+                tbody.innerHTML = "";
+
+                // Verificar si hay datos
+                if (!data.alumnos || data.alumnos.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='7'>No hay alumnos en este grupo</td></tr>";
+                    return;
+                }
+
+                // Generar filas de la tabla
+                data.alumnos.forEach(alumno => {
+                    // Si hay múltiples materias por alumno, creamos una fila por cada materia
+                    if (alumno.asistencias && Object.keys(alumno.asistencias).length > 0) {
+                        Object.entries(alumno.asistencias).forEach(([claveM, asistencia]) => {
+                            const materia = data.materias[claveM] || { 
+                                nombre: claveM, 
+                                profesor: "Profesor no asignado" 
+                            };
+                            
+                            const porcentajeClass = asistencia.porcentaje >= 80 ? 'porcentaje-alto' : 
+                                                asistencia.porcentaje >= 50 ? 'porcentaje-medio' : 'porcentaje-bajo';
+
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${alumno.matricula}</td>
+                                <td>${alumno.nombre_completo}</td>
+                                <td>${alumno.correo || "N/A"}</td>
+                                <td>${materia.nombre}</td>
+                                <td>${materia.profesor}</td>
+                                <td>${asistencia.presentes}/${asistencia.total}</td>
+                                <td class="porcentaje-cell ${porcentajeClass}">${asistencia.porcentaje}%</td>
+                            `;
+                            
+                            tbody.appendChild(row);
+                        });
+                    } else {
+                        // Si no hay asistencias registradas
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${alumno.matricula}</td>
+                            <td>${alumno.nombre_completo}</td>
+                            <td>${alumno.correo || "N/A"}</td>
+                            <td colspan="4">No hay datos de asistencia</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error:", error);
+                tbody.innerHTML = `<tr><td colspan='7'>Error al cargar los datos</td></tr>`;
+                
+                if (errorDiv) {
+                    errorDiv.textContent = `Error al conectar con el servidor: ${error.message}`;
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }
+    </script>
+    
+</body>
+</html>

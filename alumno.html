@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Horario del Alumno</title>
+  <link rel="stylesheet" href="css/alumno.css">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Mi Horario Completo con Asistencia</h2>
+
+    <div id="infoAlumno" style="margin-bottom: 20px; text-align: left;"></div>
+    <div id="loading" class="loading">Cargando datos de asistencia...</div>
+
+    <table id="tablaHorario" style="display: none;">
+      <thead>
+        <tr>
+          <th>Materia</th>
+          <th>Día</th>
+          <th>Hora</th>
+          
+          <th>Asistencia</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <br>
+    <button onclick="volver()">Volver</button>
+  </div>
+
+  <script>
+    // Estado global
+const estado = {
+  usuario: JSON.parse(localStorage.getItem("usuario")),
+  horario: [],
+  cargando: true
+};
+
+// Elementos del DOM
+const elementos = {
+  tabla: document.getElementById("tablaHorario"),
+  loading: document.getElementById("loading"),
+  infoAlumno: document.getElementById("infoAlumno")
+};
+
+// Función principal
+async function init() {
+  if (!estado.usuario || estado.usuario.rol !== 1) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  mostrarInfoAlumno();
+  await cargarHorario();
+  renderizarHorario();
+}
+
+// Mostrar información del alumno
+function mostrarInfoAlumno() {
+  elementos.infoAlumno.innerHTML = `
+    <strong>Nombre:</strong> ${estado.usuario.nombre} ${estado.usuario.ape1} ${estado.usuario.ape2 || ""}<br>
+    <strong>Matrícula:</strong> ${estado.usuario.matricula}<br>
+    <strong>Correo:</strong> ${estado.usuario.correo}
+  `;
+}
+
+// Cargar horario desde la API
+// Función para cargar el horario (modificada)
+async function cargarHorario() {
+  try {
+    elementos.loading.textContent = "Cargando horario...";
+    
+    // Usamos matricula directamente (asegurándonos que existe)
+    if (!estado.usuario?.matricula) {
+      throw new Error("No se encontró la matrícula del alumno");
+    }
+    
+    const response = await fetch(`http://localhost:8000/api/asistencias/horario-alumno/${estado.usuario.matricula}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Error ${response.status}`);
+    }
+    
+    estado.horario = await response.json();
+    estado.cargando = false;
+    
+  } catch (error) {
+    console.error("Error al cargar horario:", error);
+    elementos.loading.textContent = `Error: ${error.message}`;
+    elementos.loading.style.color = "red";
+  }
+}
+
+// Renderizar la tabla de horario
+function renderizarHorario() {
+  if (estado.cargando) return;
+
+  const tbody = elementos.tabla.querySelector("tbody");
+  tbody.innerHTML = "";
+
+  // Orden de los días
+  const ordenDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+  
+  // Agrupar por día y materia para evitar duplicados
+  const clasesUnicasPorDia = {};
+  
+  estado.horario.forEach(clase => {
+    const key = `${clase.dia}-${clase.materia}`;
+    if (!clasesUnicasPorDia[key]) {
+      clasesUnicasPorDia[key] = clase;
+    }
+  });
+
+  // Agrupar por día
+  const clasesPorDia = {};
+  Object.values(clasesUnicasPorDia).forEach(clase => {
+    if (!clasesPorDia[clase.dia]) {
+      clasesPorDia[clase.dia] = [];
+    }
+    clasesPorDia[clase.dia].push(clase);
+  });
+
+  // Renderizar días en orden
+  ordenDias.forEach(dia => {
+    if (clasesPorDia[dia] && clasesPorDia[dia].length > 0) {
+      // Encabezado del día
+      const filaDia = document.createElement("tr");
+      filaDia.innerHTML = `<td colspan="5"><strong>${dia}</strong></td>`;
+      tbody.appendChild(filaDia);
+
+      // Clases de ese día
+      clasesPorDia[dia]
+        .sort((a, b) => a.hora.localeCompare(b.hora))
+        .forEach(clase => {
+          const estadoAsistencia = clase.asistencia === null ? "No registrado" : 
+                                 clase.asistencia ? "Presente" : "Ausente";
+          const claseCss = clase.asistencia === true ? "presente" : 
+                          clase.asistencia === false ? "ausente" : "";
+
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${clase.materia}</td>
+            <td>${dia}</td>
+            <td>${clase.hora}</td>
+            
+            <td class="${claseCss}">${estadoAsistencia}</td>
+          `;
+          tbody.appendChild(fila);
+        });
+    }
+  });
+
+  // Mostrar tabla
+  elementos.tabla.style.display = "table";
+  elementos.loading.style.display = "none";
+}
+// Inicializar
+document.addEventListener("DOMContentLoaded", () => {
+  init();
+  iniciarAutoActualizacion();
+});
+
+// Función para volver
+function volver() {
+  window.location.href = "login.html";
+}
+  </script>
+</body>
+</html>

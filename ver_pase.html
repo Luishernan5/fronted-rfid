@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pase de Lista - Guardado</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .login-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f271;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .presente {
+      color: green;
+      font-weight: bold;
+    }
+    .ausente {
+      color: red;
+      font-weight: bold;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Pase de Lista Guardado - Materia: <span id="nombreMateria"></span></h2>
+    <div id="loading" class="loading">Cargando datos...</div>
+    <table id="tablaPase" style="display: none;">
+      <thead>
+        <tr>
+          <th>Matrícula</th>
+          <th>Nombre</th>
+          <th>Apellido Paterno</th>
+          <th>Apellido Materno</th>
+          <th>Asistencia</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <br>
+    <div id="buttons" style="display: none;">
+      <button onclick="generarExcel()">Generar Excel</button>
+      <button onclick="volver()">Volver</button>
+    </div>
+  </div>
+
+  <script>
+    // Estado de la aplicación
+    const appState = {
+      datosCargados: false,
+      materia: null,
+      grupo: null,
+      asistencias: []
+    };
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (performance.navigation.type === 1) {
+        localStorage.removeItem("materiaSeleccionada");
+        localStorage.removeItem("grupoSeleccionado");
+        window.location.href = "profesor.html";
+        return;
+      }
+
+      appState.materia = localStorage.getItem("materiaSeleccionada");
+      appState.grupo = localStorage.getItem("grupoSeleccionado") || 3401;
+
+      if (!appState.materia) {
+        window.location.href = "profesor.html";
+        return;
+      }
+
+      await cargarPaseLista();
+    });
+
+    // Cargar datos
+    async function cargarPaseLista() {
+      try {
+        document.getElementById("nombreMateria").textContent = appState.materia;
+        
+        const response = await fetch(
+          `http://localhost:8000/api/asistencias/?claveM=${appState.materia}&numGrup=${appState.grupo}&unique=true`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${await response.text()}`);
+        }
+        
+        appState.asistencias = await response.json();
+        mostrarAsistencias();
+        
+        // Mostrar elementos
+        document.getElementById("tablaPase").style.display = "table";
+        document.getElementById("buttons").style.display = "block";
+        document.getElementById("loading").style.display = "none";
+        
+        appState.datosCargados = true;
+        localStorage.removeItem("materiaSeleccionada");
+        
+      } catch (error) {
+        console.error("Error al cargar asistencias:", error);
+        alert(`Error: ${error.message}`);
+        window.location.href = "profesor.html";
+      }
+    }
+
+    // Mostrar datos en tabla
+    function mostrarAsistencias() {
+      const tbody = document.querySelector("#tablaPase tbody");
+      tbody.innerHTML = '';
+      
+      const seen = new Set();
+      
+      appState.asistencias.forEach(a => {
+        const key = `${a.matricula}-${a.claveM}-${a.fecha}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${a.matricula}</td>
+            <td>${a.nombre_completo.split(' ')[0]}</td>
+            <td>${a.nombre_completo.split(' ')[1]}</td>
+            <td>${a.nombre_completo.split(' ')[2] || ''}</td>
+            <td class="${a.presente ? 'presente' : 'ausente'}">
+              ${a.presente ? 'Presente' : 'Ausente'}
+            </td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+    }
+
+    function generarExcel() {
+      alert(`Generando Excel para: ${appState.materia}`);
+      // Lógica para generar Excel...
+    }
+
+    function volver() {
+      window.location.href = "profesor.html";
+    }
+  </script>
+</body>
+</html>
