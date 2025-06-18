@@ -88,99 +88,97 @@
   </div>
 
   <script>
-    // Estado de la aplicación
-    const appState = {
-      datosCargados: false,
-      materia: null,
-      grupo: null,
-      asistencias: []
-    };
+  // Estado de la aplicación
+  const appState = {
+    datosCargados: false,
+    materia: null,
+    grupo: null,
+    asistencias: []
+  };
 
-    // Inicialización
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (performance.navigation.type === 1) {
-        localStorage.removeItem("materiaSeleccionada");
-        localStorage.removeItem("grupoSeleccionado");
-        window.location.href = "profesor.html";
-        return;
-      }
-
-      appState.materia = localStorage.getItem("materiaSeleccionada");
-      appState.grupo = localStorage.getItem("grupoSeleccionado") || 3401;
-
-      if (!appState.materia) {
-        window.location.href = "profesor.html";
-        return;
-      }
-
-      await cargarPaseLista();
-    });
-
-    // Cargar datos
-    async function cargarPaseLista() {
-      try {
-        document.getElementById("nombreMateria").textContent = appState.materia;
-        
-        const response = await fetch(
-          `https://asistenback.onrender.com/api/asistencias/?claveM=${appState.materia}&numGrup=${appState.grupo}&unique=true`
-        );
-        
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${await response.text()}`);
-        }
-        
-        appState.asistencias = await response.json();
-        mostrarAsistencias();
-        
-        // Mostrar elementos
-        document.getElementById("tablaPase").style.display = "table";
-        document.getElementById("buttons").style.display = "block";
-        document.getElementById("loading").style.display = "none";
-        
-        appState.datosCargados = true;
-        localStorage.removeItem("materiaSeleccionada");
-        
-      } catch (error) {
-        console.error("Error al cargar asistencias:", error);
-        alert(`Error: ${error.message}`);
-        window.location.href = "profesor.html";
-      }
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (performance.navigation.type === 1) {
+      localStorage.removeItem("materiaSeleccionada");
+      localStorage.removeItem("grupoSeleccionado");
+      window.location.href = "profesor.html";
+      return;
     }
 
-    // Mostrar datos en tabla
-    function mostrarAsistencias() {
-      const tbody = document.querySelector("#tablaPase tbody");
-      tbody.innerHTML = '';
-      
-      const seen = new Set();
-      
-      appState.asistencias.forEach(a => {
-        const key = `${a.matricula}-${a.claveM}-${a.fecha}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${a.matricula}</td>
-            <td>${a.nombre_completo.split(' ')[0]}</td>
-            <td>${a.nombre_completo.split(' ')[1]}</td>
-            <td>${a.nombre_completo.split(' ')[2] || ''}</td>
-            <td class="${a.presente ? 'presente' : 'ausente'}">
-              ${a.presente ? 'Presente' : 'Ausente'}
-            </td>
-          `;
-          tbody.appendChild(row);
-        }
-      });
+    appState.materia = localStorage.getItem("materiaSeleccionada");
+    appState.grupo = localStorage.getItem("grupoSeleccionado") || 3401;
+
+    if (!appState.materia) {
+      window.location.href = "profesor.html";
+      return;
     }
 
-    function generarExcel() {
-      alert(`Generando Excel para: ${appState.materia}`);
-      // Lógica para generar Excel...
-    }
+    await cargarPaseLista();
+  });
 
-    function volver() {
+  async function cargarPaseLista() {
+    try {
+      document.getElementById("nombreMateria").textContent = appState.materia;
+
+      const response = await fetch(
+        `https://asistenback.onrender.com/api/asistencias/?claveM=${appState.materia}&numGrup=${appState.grupo}&unique=true`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${await response.text()}`);
+      }
+
+      appState.asistencias = await response.json();
+      mostrarAsistencias();
+
+      document.getElementById("tablaPase").style.display = "table";
+      document.getElementById("buttons").style.display = "block";
+      document.getElementById("loading").style.display = "none";
+
+      appState.datosCargados = true;
+      localStorage.removeItem("materiaSeleccionada");
+
+    } catch (error) {
+      console.error("Error al cargar asistencias:", error);
+      alert(`Error: ${error.message}`);
       window.location.href = "profesor.html";
     }
-  </script>
+  }
+
+  function mostrarAsistencias() {
+    const tbody = document.querySelector("#tablaPase tbody");
+    tbody.innerHTML = '';
+
+    const seen = new Set();
+
+    appState.asistencias.forEach(a => {
+      const key = `${a.matricula}-${a.claveM}-${a.fecha}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${a.matricula}</td>
+          <td>${a.nombre_completo.split(' ')[0]}</td>
+          <td>${a.nombre_completo.split(' ')[1]}</td>
+          <td>${a.nombre_completo.split(' ')[2] || ''}</td>
+          <td class="${a.presente ? 'presente' : 'ausente'}">
+            ${a.presente ? 'Presente' : 'Ausente'}
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+    });
+  }
+
+  // ✅ Modificado: ahora genera el Excel desde el backend
+  function generarExcel() {
+    const url = `https://asistenback.onrender.com/reportes/excel_asistencia?claveM=${appState.materia}&numGrupo=${appState.grupo}`;
+    window.open(url, "_blank");
+  }
+
+  function volver() {
+    window.location.href = "profesor.html";
+  }
+</script>
+
 </body>
 </html>

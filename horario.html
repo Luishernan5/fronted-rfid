@@ -30,7 +30,7 @@
   
   // Redirigir si no está autenticado o no tiene rol válido
   if (!usuario || (usuario.rol !== 2 && usuario.rol !== 3)) {
-    location.href = "login.html";
+    location.href = "index.html";
   }
 
   // Función para cargar horario desde la API (solo para rol 2 - Profesor)
